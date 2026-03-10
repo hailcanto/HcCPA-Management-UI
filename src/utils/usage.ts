@@ -671,6 +671,46 @@ export function calculateRecentPerMinuteRates(
 }
 
 /**
+ * 从使用数据获取所有 API 密钥名称
+ */
+export function getApiKeysFromUsage(usageData: unknown): string[] {
+  const apis = getApisRecord(usageData);
+  if (!apis) return [];
+  return Object.keys(apis).filter(Boolean).sort();
+}
+
+/**
+ * 按 API 密钥过滤使用数据，仅保留指定密钥的统计
+ */
+export function filterUsageByApiKey<T>(usageData: T, apiKey: string | null): T {
+  if (!apiKey) return usageData;
+
+  const usageRecord = isRecord(usageData) ? usageData : null;
+  const apis = getApisRecord(usageData);
+  if (!usageRecord || !apis) return usageData;
+
+  const apiEntry = apis[apiKey];
+  if (!isRecord(apiEntry)) return usageData;
+
+  const totalSummary = createUsageSummary();
+  const modelsData = isRecord(apiEntry.models) ? apiEntry.models : {};
+
+  Object.values(modelsData).forEach((modelEntry) => {
+    if (!isRecord(modelEntry)) return;
+    totalSummary.totalRequests += Number(modelEntry.total_requests) || 0;
+    totalSummary.successCount += Number(modelEntry.success_count) || 0;
+    totalSummary.failureCount += Number(modelEntry.failure_count) || 0;
+    totalSummary.totalTokens += Number(modelEntry.total_tokens) || 0;
+  });
+
+  return {
+    ...usageRecord,
+    ...toUsageSummaryFields(totalSummary),
+    apis: { [apiKey]: apiEntry }
+  } as T;
+}
+
+/**
  * 从使用数据获取模型名称列表
  */
 export function getModelNamesFromUsage(usageData: unknown): string[] {

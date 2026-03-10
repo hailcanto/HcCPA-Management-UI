@@ -23,6 +23,7 @@ import iconGrok from '@/assets/icons/grok.svg';
 import iconDeepseek from '@/assets/icons/deepseek.svg';
 import iconMinimax from '@/assets/icons/minimax.svg';
 import styles from './SystemPage.module.scss';
+import { UpdatePanel } from '@/components/system/UpdatePanel';
 
 const MODEL_CATEGORY_ICONS: Record<string, string | { light: string; dark: string }> = {
   gpt: { light: iconOpenaiLight, dark: iconOpenaiDark },
@@ -272,6 +273,7 @@ export function SystemPage() {
   return (
     <div className={styles.container}>
       <h1 className={styles.pageTitle}>{t('system_info.title')}</h1>
+      <UpdatePanel />
       <div className={styles.content}>
       <Card className={styles.aboutCard}>
         <div className={styles.aboutHeader}>

@@ -17,6 +17,7 @@ import { Select } from '@/components/ui/Select';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
 import { useThemeStore, useConfigStore } from '@/stores';
+import { useApiKeysStore } from '@/stores/useApiKeysStore';
 import {
   StatCards,
   UsageChart,
@@ -35,9 +36,11 @@ import {
 } from '@/components/usage';
 import {
   getModelNamesFromUsage,
+  getApiKeysFromUsage,
   getApiStats,
   getModelStats,
   filterUsageByTimeRange,
+  filterUsageByApiKey,
   type UsageTimeRange
 } from '@/utils/usage';
 import styles from './UsagePage.module.scss';
@@ -144,6 +147,23 @@ export function UsagePage() {
   // Chart lines state
   const [chartLines, setChartLines] = useState<string[]>(loadChartLines);
   const [timeRange, setTimeRange] = useState<UsageTimeRange>(loadTimeRange);
+  const [apiKeyFilter, setApiKeyFilter] = useState<string>('__all__');
+
+  // API Keys for filter — merge from store + from usage data apis field
+  const apiKeys = useApiKeysStore((s) => s.keys);
+  const fetchApiKeys = useApiKeysStore((s) => s.fetchKeys);
+  useEffect(() => { fetchApiKeys(); }, [fetchApiKeys]);
+
+  const usageApiKeys = useMemo(() => getApiKeysFromUsage(usage), [usage]);
+  const mergedApiKeys = useMemo(() => {
+    const set = new Set([...apiKeys, ...usageApiKeys]);
+    return Array.from(set).sort();
+  }, [apiKeys, usageApiKeys]);
+
+  const apiKeyFilterOptions = useMemo(() => [
+    { value: '__all__', label: t('usage_filter.all_keys') },
+    ...mergedApiKeys.map((k) => ({ value: k, label: k.length > 20 ? k.slice(0, 8) + '...' + k.slice(-6) : k })),
+  ], [mergedApiKeys, t]);
 
   const timeRangeOptions = useMemo(
     () =>
@@ -154,10 +174,12 @@ export function UsagePage() {
     [t]
   );
 
-  const filteredUsage = useMemo(
-    () => (usage ? filterUsageByTimeRange(usage, timeRange) : null),
-    [usage, timeRange]
-  );
+  const filteredUsage = useMemo(() => {
+    if (!usage) return null;
+    const timeFiltered = filterUsageByTimeRange(usage, timeRange);
+    const selectedKey = apiKeyFilter === '__all__' ? null : apiKeyFilter;
+    return filterUsageByApiKey(timeFiltered, selectedKey);
+  }, [usage, timeRange, apiKeyFilter]);
   const hourWindowHours =
     timeRange === 'all' ? undefined : HOUR_WINDOW_BY_TIME_RANGE[timeRange];
 
@@ -247,6 +269,19 @@ export function UsagePage() {
               fullWidth={false}
             />
           </div>
+          {mergedApiKeys.length > 0 && (
+            <div className={styles.timeRangeGroup}>
+              <span className={styles.timeRangeLabel}>{t('usage_filter.filter_by_key')}</span>
+              <Select
+                value={apiKeyFilter}
+                options={apiKeyFilterOptions}
+                onChange={(value) => setApiKeyFilter(value)}
+                className={styles.timeRangeSelectControl}
+                ariaLabel={t('usage_filter.filter_by_key')}
+                fullWidth={false}
+              />
+            </div>
+          )}
           <Button
             variant="secondary"
             size="sm"

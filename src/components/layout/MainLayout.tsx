@@ -13,10 +13,12 @@ import { Button } from '@/components/ui/Button';
 import { PageTransition } from '@/components/common/PageTransition';
 import { MainRoutes } from '@/router/MainRoutes';
 import {
+  IconArrowLeftRight,
   IconBot,
   IconChartLine,
   IconFileText,
   IconInfo,
+  IconKey,
   IconLayoutDashboard,
   IconScrollText,
   IconSettings,
@@ -42,6 +44,8 @@ const sidebarIcons: Record<string, ReactNode> = {
   aiProviders: <IconBot size={18} />,
   authFiles: <IconFileText size={18} />,
   oauth: <IconShield size={18} />,
+  apiKeys: <IconKey size={18} />,
+  modelMappings: <IconArrowLeftRight size={18} />,
   quota: <IconTimer size={18} />,
   usage: <IconChartLine size={18} />,
   config: <IconSettings size={18} />,
@@ -436,6 +440,8 @@ export function MainLayout() {
     { path: '/ai-providers', label: t('nav.ai_providers'), icon: sidebarIcons.aiProviders },
     { path: '/auth-files', label: t('nav.auth_files'), icon: sidebarIcons.authFiles },
     { path: '/oauth', label: t('nav.oauth', { defaultValue: 'OAuth' }), icon: sidebarIcons.oauth },
+    { path: '/api-keys', label: t('nav.api_keys', { defaultValue: 'API 密钥' }), icon: sidebarIcons.apiKeys },
+    { path: '/model-mappings', label: t('nav.model_mappings', { defaultValue: '模型映射' }), icon: sidebarIcons.modelMappings },
     { path: '/quota', label: t('nav.quota_management'), icon: sidebarIcons.quota },
     { path: '/usage', label: t('nav.usage_stats'), icon: sidebarIcons.usage },
     ...(config?.loggingToFile
