@@ -317,7 +317,7 @@ export const modelsApi = {
    * Fetch all available models from all auth files via management API
    */
   async fetchAllAvailableModels() {
-    const response = await apiClient.get<{ models: Array<{ id: string; name?: string }> }>('/v0/management/models/available');
+    const response = await apiClient.get<{ models: Array<{ id: string; name?: string }> }>('/models/available');
     const models = response?.models ?? [];
     return models.map((m: any) => m.id || m.name).filter(Boolean);
   },
