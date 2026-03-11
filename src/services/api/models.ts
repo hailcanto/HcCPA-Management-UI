@@ -316,18 +316,8 @@ export const modelsApi = {
    * Fetch all available models from all auth files via management API
    */
   async fetchAllAvailableModels() {
-    const result = await apiCallApi.request({
-      method: 'GET',
-      url: '/v0/management/models/available',
-    });
-
-    if (result.statusCode < 200 || result.statusCode >= 300) {
-      throw new Error(getApiCallErrorMessage(result));
-    }
-
-    const data = result.body ?? JSON.parse(result.bodyText || '{}');
-    const models = data?.models ?? [];
-
+    const response = await axios.get('/v0/management/models/available');
+    const models = response.data?.models ?? [];
     return models.map((m: any) => m.id || m.name).filter(Boolean);
   },
 };
