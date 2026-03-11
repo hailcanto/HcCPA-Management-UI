@@ -318,7 +318,7 @@ export const modelsApi = {
   async fetchAllAvailableModels() {
     const result = await apiCallApi.request({
       method: 'GET',
-      url: '/management/models/available',
+      url: '/v0/management/models/available',
     });
 
     if (result.statusCode < 200 || result.statusCode >= 300) {
