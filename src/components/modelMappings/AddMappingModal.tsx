@@ -1,8 +1,9 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { AutocompleteInput } from '@/components/ui/AutocompleteInput';
+import { modelsApi } from '@/services/api/models';
 import styles from './AddMappingModal.module.scss';
 
 interface AddMappingModalProps {
@@ -18,7 +19,7 @@ interface AddMappingModalProps {
   existingNames: string[];
 }
 
-const KNOWN_MODELS = [
+const FALLBACK_MODELS = [
   'claude-sonnet-4-6',
   'claude-opus-4-6',
   'claude-haiku-4-5',
@@ -45,6 +46,26 @@ export function AddMappingModal({ open, onClose, onSave, existingNames }: AddMap
   const [channel, setChannel] = useState('claude');
   const [fork, setFork] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [availableModels, setAvailableModels] = useState<string[]>(FALLBACK_MODELS);
+
+  // Fetch available models when modal opens
+  useEffect(() => {
+    if (!open) return;
+
+    const fetchModels = async () => {
+      try {
+        const models = await modelsApi.fetchAllAvailableModels();
+        if (models.length > 0) {
+          setAvailableModels(models);
+        }
+      } catch (error) {
+        console.error('Failed to fetch available models:', error);
+        // Keep using fallback models
+      }
+    };
+
+    fetchModels();
+  }, [open]);
 
   const resetForm = useCallback(() => {
     setSourceName('');
@@ -106,7 +127,7 @@ export function AddMappingModal({ open, onClose, onSave, existingNames }: AddMap
           <AutocompleteInput
             value={targetModel}
             onChange={setTargetModel}
-            options={KNOWN_MODELS}
+          options={availableModels}
             placeholder={t('model_mappings_page.target_model_placeholder')}
           />
         </div>
