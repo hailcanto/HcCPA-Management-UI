@@ -6,6 +6,7 @@ import axios from 'axios';
 import { normalizeModelList } from '@/utils/models';
 import { normalizeApiBase } from '@/utils/connection';
 import { apiCallApi, getApiCallErrorMessage } from './apiCall';
+import { apiClient } from './client';
 
 const DEFAULT_CLAUDE_BASE_URL = 'https://api.anthropic.com';
 const DEFAULT_GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com';
@@ -316,8 +317,8 @@ export const modelsApi = {
    * Fetch all available models from all auth files via management API
    */
   async fetchAllAvailableModels() {
-    const response = await axios.get('/v0/management/models/available');
-    const models = response.data?.models ?? [];
+    const response = await apiClient.get<{ models: Array<{ id: string; name?: string }> }>('/v0/management/models/available');
+    const models = response?.models ?? [];
     return models.map((m: any) => m.id || m.name).filter(Boolean);
   },
 };
